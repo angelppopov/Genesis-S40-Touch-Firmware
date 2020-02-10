@@ -34,19 +34,15 @@ LINKER_SCRIPT_DEP:=
 # Every subdirectory with source files must be described here
 SUBDIRS :=  \
 ../instruction_set \
-../input_control_block \
 ../serial \
-../touch_panel \
-../output_control_block
+../touch_panel
 
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../handler.c \
-../input_control_block/input_control_block.c \
 ../instruction_set/instruction_set.c \
 ../main.c \
-../output_control_block/output_control_block.c \
 ../serial/serial_ble.c \
 ../serial/serial_mcu.c \
 ../touch_panel/touch_panel.c
@@ -60,40 +56,32 @@ ASM_SRCS +=
 
 OBJS +=  \
 handler.o \
-input_control_block/input_control_block.o \
 instruction_set/instruction_set.o \
 main.o \
-output_control_block/output_control_block.o \
 serial/serial_ble.o \
 serial/serial_mcu.o \
 touch_panel/touch_panel.o
 
 OBJS_AS_ARGS +=  \
 handler.o \
-input_control_block/input_control_block.o \
 instruction_set/instruction_set.o \
 main.o \
-output_control_block/output_control_block.o \
 serial/serial_ble.o \
 serial/serial_mcu.o \
 touch_panel/touch_panel.o
 
 C_DEPS +=  \
 handler.d \
-input_control_block/input_control_block.d \
 instruction_set/instruction_set.d \
 main.d \
-output_control_block/output_control_block.d \
 serial/serial_ble.d \
 serial/serial_mcu.d \
 touch_panel/touch_panel.d
 
 C_DEPS_AS_ARGS +=  \
 handler.d \
-input_control_block/input_control_block.d \
 instruction_set/instruction_set.d \
 main.d \
-output_control_block/output_control_block.d \
 serial/serial_ble.d \
 serial/serial_mcu.d \
 touch_panel/touch_panel.d
@@ -119,13 +107,6 @@ LINKER_SCRIPT_DEP+=
 	@echo Finished building: $<
 	
 
-input_control_block/input_control_block.o: ../input_control_block/input_control_block.c
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.1.68\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega128a1u -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.1.68\gcc\dev\atxmega128a1u" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
 instruction_set/instruction_set.o: ../instruction_set/instruction_set.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
@@ -134,13 +115,6 @@ instruction_set/instruction_set.o: ../instruction_set/instruction_set.c
 	
 
 ./main.o: .././main.c
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 5.4.0
-	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.1.68\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega128a1u -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.1.68\gcc\dev\atxmega128a1u" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
-	@echo Finished building: $<
-	
-
-output_control_block/output_control_block.o: ../output_control_block/output_control_block.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.1.68\include"  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega128a1u -B "C:\Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\XMEGAA_DFP\1.1.68\gcc\dev\atxmega128a1u" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

@@ -28,8 +28,8 @@
     <ResetRule>0</ResetRule>
     <eraseonlaunchrule>0</eraseonlaunchrule>
     <EraseKey />
-    <avrtool>com.atmel.avrdbg.tool.simulator</avrtool>
-    <avrtoolserialnumber />
+    <avrtool>com.atmel.avrdbg.tool.edbg</avrtool>
+    <avrtoolserialnumber>ATML1802021800000463</avrtoolserialnumber>
     <avrdeviceexpectedsignature>0x1E974C</avrdeviceexpectedsignature>
     <com_atmel_avrdbg_tool_simulator>
       <ToolOptions>
@@ -43,8 +43,20 @@
       </ToolNumber>
       <ToolName>Simulator</ToolName>
     </com_atmel_avrdbg_tool_simulator>
-    <avrtoolinterface />
-    <UseGdb>False</UseGdb>
+    <avrtoolinterface>PDI</avrtoolinterface>
+    <UseGdb>True</UseGdb>
+    <com_atmel_avrdbg_tool_edbg>
+      <ToolOptions>
+        <InterfaceProperties>
+          <PdiClock>4000000</PdiClock>
+        </InterfaceProperties>
+        <InterfaceName>PDI</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
+      <ToolNumber>ATML1802021800000463</ToolNumber>
+      <ToolName>EDBG</ToolName>
+    </com_atmel_avrdbg_tool_edbg>
+    <avrtoolinterfaceclock>4000000</avrtoolinterfaceclock>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>

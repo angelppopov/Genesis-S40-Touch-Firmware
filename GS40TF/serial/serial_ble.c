@@ -6,9 +6,11 @@
  */ 
 
 #include "serial_ble.h"
+#include "../handler.h"
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <stdio.h>
 
 #define USART_RX_BUFFER_SIZE 512     /* 2,4,8,16,32,64,128 or 256 bytes */
 #define USART_TX_BUFFER_SIZE 512     /* 2,4,8,16,32,64,128 or 256 bytes */
@@ -21,8 +23,17 @@ static volatile unsigned char ReadingPositionOnTheBuffer;
 static volatile char receive_buffer[USART_RX_BUFFER_SIZE];
 static volatile char instruction[USART_RX_BUFFER_SIZE];
 
+FILE stdout_on_port_e = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
+
+static struct event_linker ble = {
+	.endPoint = receive,
+	.id = BLE_RECEIVE,
+	.output = transmit,
+};
 
 void serial_ble_init(void){
+	/* Register event */
+	event_register(&ble);
 	/* Serial on PORTC0 */
 	//For interrupt-driven USART operation, global interrupts should be disabled during the initialization
 	cli();
