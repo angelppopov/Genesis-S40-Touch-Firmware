@@ -65,6 +65,7 @@ ISR(PORTB_INT0_vect){
 	}
 	*(touch_events + events - 1) = '8';
 	this_event.data_size = 1;
+	
 	scheduler.add(&this_event);
 }
 

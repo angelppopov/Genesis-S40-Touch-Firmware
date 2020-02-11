@@ -9,6 +9,7 @@
 #include <avr/io.h>
 #include <stdio.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "serial/serial_ble.h"
 #include "serial/serial_mcu.h"
 #include "touch_panel/touch_panel.h"
@@ -27,6 +28,7 @@ void init(void)
 	serial_ble_init();
 	touch_panel_init();
 	scheduler_init();
+	wdt_enable(1000);
 }
 
 int main(void)
@@ -44,6 +46,7 @@ int main(void)
     while (1)
 	{
 		scheduler.process();
+		wdt_reset();
 	}
 }
 

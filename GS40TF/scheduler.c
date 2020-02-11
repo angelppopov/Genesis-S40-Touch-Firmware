@@ -50,10 +50,10 @@ volatile void execute(){
 	        }else{
 	            q_size = 0;
             }
-		}else{
-			PORTQ_OUTTGL |= (1<<PIN3_bp);
-			cpu_relax();
 		}
+	}else{
+		PORTQ_OUTTGL |= (1<<PIN3_bp);
+		cpu_relax();
 	}
 }
 
