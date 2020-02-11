@@ -7,6 +7,7 @@
 
 #include "serial_ble.h"
 #include "../handler.h"
+#include "../scheduler.h"
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -19,6 +20,7 @@
 
 static volatile unsigned char WritingPositionOnTheBuffer;
 static volatile unsigned char ReadingPositionOnTheBuffer;
+static volatile int bytes_received;
 
 static volatile char receive_buffer[USART_RX_BUFFER_SIZE];
 static volatile char instruction[USART_RX_BUFFER_SIZE];
@@ -26,14 +28,21 @@ static volatile char instruction[USART_RX_BUFFER_SIZE];
 FILE stdout_on_port_e = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
 
 static struct event_linker ble = {
-	.endPoint = receive,
+	.end_point = receive,
 	.id = BLE_RECEIVE,
-	.output = transmit,
+	.out_put = send,
 };
+
+static q_event *this_event;
+extern event_scheduler scheduler;
+
 
 void serial_ble_init(void){
 	/* Register event */
 	event_register(&ble);
+	
+	this_event->id = BLE_RECEIVE;
+	
 	/* Serial on PORTC0 */
 	//For interrupt-driven USART operation, global interrupts should be disabled during the initialization
 	cli();
@@ -79,9 +88,16 @@ ISR(USARTC0_RXC_vect){
 	WritingPositionOnTheBuffer = tmpWPosition;
 	/* Store received data in buffer */
 	receive_buffer[tmpWPosition] = data;
+	/* Count the number of bytes received */
+	bytes_received++;
+	/* If data is terminated by a new line trigger a read event */
+	if(data == '\n'){
+		this_event->data_size = bytes_received;
+		scheduler.add(this_event);
+	}
 }
 
-static void put_string(char* sp){
+static void send(char* sp){
 	while(*sp != 0x00)	//Here we check if there is still more chars to send, this is done checking the actual char and see if it is different from the null char
 	{
 		transmit(*sp);	//Using the simple send function we send one char at a time
@@ -100,7 +116,7 @@ static void receive(char* buffer, unsigned int buf_size ){
 	while ( WritingPositionOnTheBuffer == ReadingPositionOnTheBuffer ){				// Wait for incoming data /
 
 	}
-	_delay_ms(300);
+	_delay_ms(30);
 	for( i=0; i < buf_size - 1; ++i )
 	{
 		tmpWPosition = ( ReadingPositionOnTheBuffer + 1 ) & USART_RX_BUFFER_MASK;	// Calculate buffer index /

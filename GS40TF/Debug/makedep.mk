@@ -4,9 +4,13 @@
 
 handler.c
 
+instruction_set\eeprom.c
+
 instruction_set\instruction_set.c
 
 main.c
+
+scheduler.c
 
 serial\serial_ble.c
 

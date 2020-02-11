@@ -1,4 +1,5 @@
 #include "handler.h"
+#include "scheduler.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -9,11 +10,11 @@ static event_linker events[16];
 static bool locked = false;
 
 void event_register(struct event_linker *ev){
-	events[ev->id].endPoint = ev->endPoint;
-	events[ev->id].output = ev->output;
+	events[ev->id].end_point = ev->end_point;
+	events[ev->id].out_put = ev->out_put;
 }
 
-bool event_trigger(int id, int data_size){
+volatile bool event_trigger(int id, int data_size){
 	if(locked)
 	return false;
 	/* Lock event trigger */
@@ -21,7 +22,7 @@ bool event_trigger(int id, int data_size){
 	/* Request buffer for the data */
 	char *buffer = (char *)malloc(sizeof(char) * data_size);
 	/* Get the event result */
-	events[id].endPoint(buffer, data_size);
+	events[id].end_point(buffer, data_size);
 	/* Process the event */
 	event_processing(id, buffer, data_size);
 	/* Free up memory */
@@ -56,21 +57,22 @@ static void mcu_receive_handler(char *data, int size){
 
 	switch (s) {
 		case SUCCESS:
-		events[MCU].output(data);
+		events[MCU].out_put(data);
+		events[TOUCH].out_put(data);
 		break;
 		case ERROR:
-		events[BLE].output(data);
-		events[TOUCH].output(data);
+		events[BLE].out_put(data);
+		events[TOUCH].out_put(data);
 		break;
 		default:
-		events[TOUCH].output(data);
+		events[TOUCH].out_put(data);
 		break;
 	}
 }
 
 static void ble_receive_handler(char *data, int size){
 	printf("bluetooth receive handler with data size: %d bytes\n", size);
-	events[MCU].output(data);
+	events[MCU].out_put(data);
 }
 
 static void touch_receive_handler(char *data){
@@ -79,7 +81,7 @@ static void touch_receive_handler(char *data){
 	/* Get the command from memory address map */
 	char *command = "from_memory_map[*data]";
 	/* Send command over serial to MCU */
-	events[BLE].output(command);
+	events[BLE].out_put(command);
 	/* Send command over serial Bluetooth Module to connected devices */
 	//    events[BLE].output(command);
 }

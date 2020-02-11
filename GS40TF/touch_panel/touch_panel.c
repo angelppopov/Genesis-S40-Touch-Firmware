@@ -7,6 +7,7 @@
 
 #include "touch_panel.h"
 #include "../handler.h"
+#include "../scheduler.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
@@ -16,14 +17,21 @@
 static volatile char get_touch;
 
 static struct event_linker touch_event = {
-	.endPoint = touch_detected,
+	.end_point = touch_detected,
 	.id = TOUCH_RECEIVE,
-	.output = leds,
+	.out_put = leds,
 };
+
+static q_event *emit_event;
+
+extern event_scheduler scheduler;
 
 void touch_panel_init(void){
 	/* Register in event system */
 	event_register(&touch_event);
+	
+	emit_event->id = TOUCH_RECEIVE;
+	emit_event->data_size = 1;
 	/* Setup hardware */
 	interruptPortQ();
 	led_output;
@@ -31,15 +39,16 @@ void touch_panel_init(void){
 	led_toggle;
 	led_toggle;
 	
+	
 }
 
-void touch_detected(char *pin, int size){
+static void touch_detected(char *pin, int size){
 	/* This function will be invoked from event system when an event is triggered from interrupt routine */
 	*pin = get_touch;
 	led_toggle;
 }
 
-void leds(char *data){
+static void leds(char *data){
 	/* This function will be called from event system when other event needs to send data to this object */
 	
 }
@@ -47,7 +56,7 @@ void leds(char *data){
 
 ISR(PORTQ_INT0_vect){
 	led_toggle;
-	event_trigger(TOUCH_RECEIVE, 1);
+	scheduler.add(emit_event);
 }
 
 static void interruptPortQ(void){

@@ -19,6 +19,7 @@
 
 static volatile unsigned char WritingPositionOnTheBuffer;
 static volatile unsigned char ReadingPositionOnTheBuffer;
+static volatile int bytes_received;
 
 static volatile char receive_buffer[USART_RX_BUFFER_SIZE];
 static volatile char instruction[USART_RX_BUFFER_SIZE];
@@ -26,9 +27,9 @@ static volatile char instruction[USART_RX_BUFFER_SIZE];
 FILE stdout_on_port_c = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
 
 static struct event_linker mcu = {
-	.endPoint = receive,
+	.end_point = receive,
 	.id = MCU_RECEIVE,
-	.output = transmit,
+	.out_put = send,
 };
 
 void serial_mcu_init(void){
@@ -79,9 +80,16 @@ ISR(USARTE0_RXC_vect){
 	WritingPositionOnTheBuffer = tmpWPosition;
 	/* Store received data in buffer */
 	receive_buffer[tmpWPosition] = data;
+	/* Count the number of bytes received */
+	bytes_received++;
+	/* If data is terminated by a new line trigger a read event */
+	if(data == '\n'){
+		event_trigger(MCU_RECEIVE, bytes_received);
+		bytes_received = 0;
+	}
 }
 
-static void put_string(char* sp){
+static void send(char* sp){
 	while(*sp != 0x00)	//Here we check if there is still more chars to send, this is done checking the actual char and see if it is different from the null char
 	{
 		transmit(*sp);	//Using the simple send function we send one char at a time
@@ -100,13 +108,10 @@ static void receive(char* buffer, unsigned int buf_size ){
 	while ( WritingPositionOnTheBuffer == ReadingPositionOnTheBuffer ){				// Wait for incoming data /
 
 	}
-	_delay_ms(300);
-	for( i=0; i < buf_size - 1; ++i )
-	{
+	_delay_ms(3);
+	for(i = 0; i < buf_size - 1; ++i ){
 		tmpWPosition = ( ReadingPositionOnTheBuffer + 1 ) & USART_RX_BUFFER_MASK;	// Calculate buffer index /
-		
-		ReadingPositionOnTheBuffer = tmpWPosition;									// Store new index /
-		
+		ReadingPositionOnTheBuffer = tmpWPosition;									// Store new index /																
 		buffer[i] = receive_buffer[tmpWPosition];								// Return data /
 		if( WritingPositionOnTheBuffer == ReadingPositionOnTheBuffer )
 		break;

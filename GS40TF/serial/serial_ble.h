@@ -10,7 +10,7 @@
 #define SERIAL_BLE_H_
 /* Serial on PORTC0 */
 void serial_ble_init(void);
-static void put_string(char* sp);
+static void send(char* sp);
 static void transmit(unsigned char data);
 static void receive(char* buffer, unsigned int buf_size );
 

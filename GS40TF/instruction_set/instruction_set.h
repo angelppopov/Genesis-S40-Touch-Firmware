@@ -19,4 +19,6 @@ struct touch{
 	unsigned int mem_addr;
 };
 
+void from_memory_map(char *region);
+
 #endif /* INSTRUCTION_SET_H_ */

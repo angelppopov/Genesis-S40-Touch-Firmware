@@ -10,8 +10,8 @@
 #define TOUCH_PANEL_H_
 
 void touch_panel_init(void);
-void touch_detected(char *pin, int size);
-void leds(char *data);
+static void touch_detected(char *pin, int size);
+static void leds(char *data);
 /* Setup hardware */
 static void interruptPortQ(void);
 

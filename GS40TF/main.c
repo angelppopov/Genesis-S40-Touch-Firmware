@@ -15,11 +15,8 @@
 
 extern FILE stdout_on_port_e;
 
-#define sw_input_set				PORTQ.DIR &= ~(1<<PIN2_bp)
-#define sw_input_pull_up			PORTQ.PIN2CTRL |= PORT_OPC_PULLUP_gc
-#define sw_high				PORTQ_OUT |= (1<<PIN2_bp)
-#define sw					!(PORTQ.IN & PIN2_bm)
 void setup32MhzInternalOsc(void);
+
 void init(void)
 {
 	// Initialize serial_mcu
@@ -27,9 +24,6 @@ void init(void)
 	// Initialize serial_ble
 	serial_ble_init();
 	touch_panel_init();
-	sw_input_set;
-	sw_input_pull_up;
-	sw_high;
 	
 }
 
@@ -47,10 +41,7 @@ int main(void)
 	printf("Working\n");
     while (1)
 	{
-		if(sw){
-			event_trigger(TOUCH_RECEIVE, 1);
-			_delay_ms(500);
-		}
+
 	}
 }
 
