@@ -22,21 +22,24 @@
 #define SUCCESS 1
 #define ERROR -1
 
-typedef void (*event_end_point)(char *buffer, int size);
+typedef void (*event_input)(char *buffer, int size);
 typedef void (*object_output_point)(char *buffer);
 
-
 typedef struct event_linker {
-    int id;                         /*  Event id  */
+    int id;                         /*  
+										Event id  
+										An event has its own place on the event buffer
+									*/
     
-    object_output_point out_put;      /*
-                                        Function pointer to object output point.
-                                        Typically it is some send function to transmit data or set function.
+    event_input input;				 /*
+                                        Function pointer to an object read point.
+										When the scheduler process the event from its event queue buffer it uses that function
+										pointer to get the process data from hardware interrupt handler when the event has been occurred.
                                     */
-    
-    event_end_point end_point;        /*
-                                        Function pointer ot object end point.
-                                        This is an object endpoint to return processed data from hardware interrupt handler.
+	
+	object_output_point output;      /*
+                                        Function pointer to an object output point.
+                                        Typically it is some send function to transmit data or set function.
                                     */
 }event_linker;
 

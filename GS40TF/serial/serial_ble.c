@@ -25,12 +25,12 @@ static volatile int bytes_received;
 static volatile char receive_buffer[USART_RX_BUFFER_SIZE];
 static volatile char instruction[USART_RX_BUFFER_SIZE];
 
-FILE stdout_on_port_e = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
+FILE stdout_on_port_c = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
 
 static struct event_linker ble = {
-	.end_point = receive,
 	.id = BLE_RECEIVE,
-	.out_put = send,
+	.input = receive,
+	.output = send,
 };
 
 static q_event *this_event;

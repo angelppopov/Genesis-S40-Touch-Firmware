@@ -6,6 +6,9 @@
  */ 
 #include "scheduler.h"
 #include <avr/io.h>
+#define F_CPU 32000000
+#include <avr/delay.h>
+#include <stdbool.h>
 
 
 /* Dynamically allocated buffer of events to be executed */
@@ -15,7 +18,7 @@ static uint8_t q_size;
 event_scheduler scheduler;
 
 /* Get first structure from the buffer */
-#define  first event_queue[q_size - (q_size + 1)]
+#define queue_is_empty (q_size == 0)
 
 void scheduler_init(){
 	scheduler.add = append;
@@ -23,18 +26,49 @@ void scheduler_init(){
 }
 
 volatile void append(q_event *ev){
-	q_size++;
-	if(q_size <= 1){
-		/* Allocate memory if it has not been previously allocated */
-		event_queue = (q_event *)malloc(sizeof(q_event) * q_size);	
+    q_size++;
+    if(q_size <= 1){
+	    /* Allocate memory if it has not been previously allocated */
+	    event_queue = (q_event *)malloc(sizeof(q_event));
+	    *event_queue = *ev;
 	}else{
-		/* Resize the memory block if has been allocated */
-		event_queue = (q_event *)realloc(event_queue, sizeof(q_event) * q_size);
-	}
+	    /* Resize the memory block if has been allocated */
+	    event_queue = (q_event *)realloc(event_queue, sizeof(q_event) * q_size);
+	    /* Assign to data to last memory address */
+	    *(event_queue + q_size - 1) = *ev;
+    }
 }
 
 volatile void execute(){
-	event_trigger(first.id, first.data_size);
-	
-	if(q_size == 0) free(event_queue);
+	if(!queue_is_empty){
+		/* Process the first event in the event queue */
+		bool success = event_trigger(event_queue->id, event_queue->data_size);
+		if(success){
+            if(q_size > 1){
+	            /* Pop the first event when executed */
+	            event_queue = remove_from_queue();
+	        }else{
+	            q_size = 0;
+            }
+		}else{
+			PORTQ_OUTTGL |= (1<<PIN3_bp);
+			cpu_relax();
+		}
+	}
+}
+
+static q_event* remove_from_queue(){
+	/* Allocate with a size less than the current one */
+	q_event *tmp = (q_event *)malloc((q_size - 1) * sizeof(q_event));
+	/* Copy everything after the first index */
+	memcpy( tmp, (event_queue + 1), (q_size - 1) * sizeof(q_event));
+	/* Free event queue when copied to tmp  */
+	free(event_queue);
+	/* Return tmp to be assigned to event_queue */
+	q_size--;
+	return tmp;
+}
+
+static void cpu_relax(){
+	_delay_ms(100);
 }

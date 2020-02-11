@@ -11,41 +11,43 @@
 #include <avr/interrupt.h>
 #include "serial/serial_ble.h"
 #include "serial/serial_mcu.h"
+#include "touch_panel/touch_panel.h"
 #include "handler.h"
+#include "scheduler.h"
 
 extern FILE stdout_on_port_e;
+extern event_scheduler scheduler;
 
-void setup32MhzInternalOsc(void);
+void init_32_mhz_internal_osc(void);
+
 
 void init(void)
 {
-	// Initialize serial_mcu
 	serial_mcu_init();
-	// Initialize serial_ble
 	serial_ble_init();
 	touch_panel_init();
-	
+	scheduler_init();
 }
 
 int main(void)
 {
-	setup32MhzInternalOsc();
+	init_32_mhz_internal_osc();
 	init();
 	
 	sei();							/*
 										Enables interrupts by setting the global interrupt mask.
 									*/
 	stdout = &stdout_on_port_e;		/*
-										Set default stdout to MCU on PORTC0
+										Set default stdout to other MCU on PORTE0
 									*/
 	printf("Working\n");
     while (1)
 	{
-
+		scheduler.process();
 	}
 }
 
-void setup32MhzInternalOsc(void){
+void init_32_mhz_internal_osc(void){
 		OSC_CTRL |= OSC_RC32MEN_bm;						//Setup 32Mhz crystal
 		while(!(OSC_STATUS & OSC_RC32MRDY_bm));
 		CCP = CCP_IOREG_gc;								//Trigger protection mechanism

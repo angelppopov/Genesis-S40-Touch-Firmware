@@ -25,5 +25,7 @@ typedef struct event_scheduler{
 void scheduler_init();
 volatile void append(q_event *ev);
 volatile void execute();
+static q_event* remove_from_queue();
+static void cpu_relax();
 
 #endif /* SCHEDULER_H_ */

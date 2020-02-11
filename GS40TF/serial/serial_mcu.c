@@ -7,6 +7,7 @@
 
 #include "serial_mcu.h"
 #include "../handler.h"
+#include "../scheduler.h"
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
@@ -24,17 +25,21 @@ static volatile int bytes_received;
 static volatile char receive_buffer[USART_RX_BUFFER_SIZE];
 static volatile char instruction[USART_RX_BUFFER_SIZE];
 
-FILE stdout_on_port_c = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
+FILE stdout_on_port_e = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
 
 static struct event_linker mcu = {
-	.end_point = receive,
 	.id = MCU_RECEIVE,
-	.out_put = send,
+	.input = receive,
+	.output = send,
 };
+
+static q_event *this_event;
+extern event_scheduler scheduler;
 
 void serial_mcu_init(void){
 	/* Register event */
 	event_register(&mcu);
+	this_event->id = MCU_RECEIVE;
 	/* Serial on PORTE0 */
 	//For interrupt-driven USART operation, global interrupts should be disabled during the initialization
 	cli();
@@ -56,8 +61,8 @@ void serial_mcu_init(void){
 	USARTE0.CTRLA = (USARTE0.CTRLA & (~(USART_RXCINTLVL_gm | USART_TXCINTLVL_gm | USART_DREINTLVL_gm))) |
 	USART_RXCINTLVL_LO_gc | USART_TXCINTLVL_OFF_gc | USART_DREINTLVL_OFF_gc;
 	// Required Baud rate: 9600 at 2MHz system peripheral clock
-	USARTC0_BAUDCTRLB = 0;
-	USARTC0_BAUDCTRLA = 34; //207
+	USARTE0_BAUDCTRLB = 0;
+	USARTE0_BAUDCTRLA = 34; //207
 	// Receiver: On
 	// Transmitter: On
 	// Double transmission speed mode: On
@@ -84,7 +89,8 @@ ISR(USARTE0_RXC_vect){
 	bytes_received++;
 	/* If data is terminated by a new line trigger a read event */
 	if(data == '\n'){
-		event_trigger(MCU_RECEIVE, bytes_received);
+		this_event->data_size = bytes_received;
+		scheduler.add(this_event);
 		bytes_received = 0;
 	}
 }

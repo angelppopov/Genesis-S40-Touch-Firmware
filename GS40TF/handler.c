@@ -3,26 +3,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-static event_linker events[16];
+static event_linker objects[16];
 
 //static enum event_types type;
 
 static bool locked = false;
-
+/* 
+	This function appends to the event buffer
+*/
 void event_register(struct event_linker *ev){
-	events[ev->id].end_point = ev->end_point;
-	events[ev->id].out_put = ev->out_put;
+	/* Assign an event read function */
+	objects[ev->id].input = ev->input;
+	/* Assign an event output function */
+	objects[ev->id].output = ev->output;
 }
 
 volatile bool event_trigger(int id, int data_size){
 	if(locked)
-	return false;
+		return false;
 	/* Lock event trigger */
 	locked = true;
 	/* Request buffer for the data */
 	char *buffer = (char *)malloc(sizeof(char) * data_size);
 	/* Get the event result */
-	events[id].end_point(buffer, data_size);
+	objects[id].input(buffer, data_size);
 	/* Process the event */
 	event_processing(id, buffer, data_size);
 	/* Free up memory */
@@ -57,22 +61,22 @@ static void mcu_receive_handler(char *data, int size){
 
 	switch (s) {
 		case SUCCESS:
-		events[MCU].out_put(data);
-		events[TOUCH].out_put(data);
+		objects[MCU].output(data);
+		objects[TOUCH].output(data);
 		break;
 		case ERROR:
-		events[BLE].out_put(data);
-		events[TOUCH].out_put(data);
+		objects[BLE].output(data);
+		objects[TOUCH].output(data);
 		break;
 		default:
-		events[TOUCH].out_put(data);
+		objects[TOUCH].output(data);
 		break;
 	}
 }
 
 static void ble_receive_handler(char *data, int size){
 	printf("bluetooth receive handler with data size: %d bytes\n", size);
-	events[MCU].out_put(data);
+	objects[MCU].output(data);
 }
 
 static void touch_receive_handler(char *data){
@@ -81,7 +85,7 @@ static void touch_receive_handler(char *data){
 	/* Get the command from memory address map */
 	char *command = "from_memory_map[*data]";
 	/* Send command over serial to MCU */
-	events[BLE].out_put(command);
+	objects[BLE].output(command);
 	/* Send command over serial Bluetooth Module to connected devices */
 	//    events[BLE].output(command);
 }

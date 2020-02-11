@@ -14,38 +14,40 @@
 #define led_output	PORTQ.DIR |= PIN3_bm
 #define led_toggle	PORTQ_OUTTGL |= (1<<PIN3_bp)
 
-static volatile char get_touch;
+
+static char *touch_events;
+static uint8_t current_event_read;
+static uint8_t events;
 
 static struct event_linker touch_event = {
-	.end_point = touch_detected,
 	.id = TOUCH_RECEIVE,
-	.out_put = leds,
+	.input = touch_detected,
+	.output = leds,
 };
 
-static q_event *emit_event;
+static q_event this_event;
 
 extern event_scheduler scheduler;
 
 void touch_panel_init(void){
 	/* Register in event system */
 	event_register(&touch_event);
-	
-	emit_event->id = TOUCH_RECEIVE;
-	emit_event->data_size = 1;
+	this_event.id = TOUCH_RECEIVE;
 	/* Setup hardware */
-	interruptPortQ();
+	interruptPortB();
 	led_output;
-	PORTQ_OUT |= (1<<PIN3_bm);
-	led_toggle;
-	led_toggle;
-	
 	
 }
 
 static void touch_detected(char *pin, int size){
 	/* This function will be invoked from event system when an event is triggered from interrupt routine */
-	*pin = get_touch;
-	led_toggle;
+    *pin = *(touch_events + current_event_read);
+	printf("touch: %c\n", *pin);
+    current_event_read++;
+    if (current_event_read == events) {
+	    current_event_read = events = 0;
+	    free(touch_events);
+    }
 }
 
 static void leds(char *data){
@@ -53,23 +55,30 @@ static void leds(char *data){
 	
 }
 
-
-ISR(PORTQ_INT0_vect){
+ISR(PORTB_INT0_vect){
 	led_toggle;
-	scheduler.add(emit_event);
+	events++;
+	if(events > 1){
+		touch_events = (char *)realloc(touch_events, sizeof(char) * events);
+	}else{
+		touch_events = (char *)malloc(sizeof(char));
+	}
+	*(touch_events + events - 1) = '8';
+	this_event.data_size = 1;
+	scheduler.add(&this_event);
 }
 
-static void interruptPortQ(void){
-	// External interrupt 0 on PQ2, enable pull up, sense falling edge
-	PORTQ.PIN2CTRL = PORT_OPC_PULLUP_gc;	// pull up
-	PORTQ_OUT |= (1<<PIN2_bp);				// set pin high
-	PORTQ.PIN2CTRL = PORT_ISC_FALLING_gc;	// configure interrupt
-	PORTQ.INT0MASK = PIN2_bm;				// configure interrupt vector
-	PORTQ.INTCTRL = PORT_INT0LVL_HI_gc;		// interrupt level pg.150
+static void interruptPortB(void){
+	// External interrupt 0 on PB3, enable pull up, sense falling edge
+	PORTB.PIN3CTRL = PORT_OPC_PULLUP_gc;	// pull up
+	PORTB_OUT |= (1<<PIN3_bp);				// set pin high
+	PORTB.PIN7CTRL = PORT_ISC_RISING_gc;	// configure interrupt
+	PORTB.INT0MASK = PIN3_bm;				// configure interrupt vector
+	PORTB.INTCTRL = PORT_INT0LVL_LO_gc;		// interrupt level pg.150
 	
 
 	// Input
-	PORTQ.DIRSET &= ~(1<<PIN2_bp);
+	PORTB.DIRSET &= ~(1<<PIN7_bp);
 
 	// Enable low level interrupts
 	PMIC.CTRL = PMIC_LOLVLEN_bm;
