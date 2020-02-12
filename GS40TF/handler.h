@@ -25,7 +25,7 @@
 typedef void (*event_input)(char *buffer, int size);
 typedef void (*object_output_point)(char *buffer);
 
-typedef struct event_linker {
+struct event_linker{
     int id;                         /*  
 										Event id  
 										An event has its own place on the event buffer
@@ -41,7 +41,7 @@ typedef struct event_linker {
                                         Function pointer to an object output point.
                                         Typically it is some send function to transmit data or set function.
                                     */
-}event_linker;
+};
 
 void event_register(struct event_linker *evt);
 volatile bool event_trigger(int id, int data_size);

@@ -9,7 +9,7 @@
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
 
-typedef struct q_event{
+typedef struct {
 	int id;
 	int data_size;
 }q_event;
@@ -17,7 +17,7 @@ typedef struct q_event{
 typedef volatile void (*f_add)(q_event *ev);
 typedef volatile void (*f_process)();
 
-typedef struct event_scheduler{
+typedef struct {
 	f_add add;
 	f_process process;
 }event_scheduler;

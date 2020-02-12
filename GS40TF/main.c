@@ -1,9 +1,8 @@
 /*
- * GS40TF.c
- *
  * Created: 2/10/2020 9:33:39 AM
  * Author : Angel Popov
- */ 
+ */
+ 
 #define F_CPU 32000000
 #include <avr/delay.h>
 #include <avr/io.h>
@@ -20,7 +19,6 @@ extern FILE stdout_on_port_e;
 extern event_scheduler scheduler;
 
 void init_32_mhz_internal_osc(void);
-
 
 void init(void)
 {

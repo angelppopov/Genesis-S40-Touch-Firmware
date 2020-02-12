@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static event_linker objects[16];
+static struct event_linker objects[16];
 
 //static enum event_types type;
 
