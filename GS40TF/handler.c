@@ -9,7 +9,7 @@
 static struct object objects[6];
 static int status = SUCCESS;
 static bool locked = false;
-int current_temp;
+int current_temp = 90;
 
 /* 
 	This function appends to the event buffer
@@ -87,16 +87,17 @@ static void ble_receive_handler(char *data, int size){
 
 static void touch_receive_handler(char *addr){
 	/* Check if the object was able to give you the data */
-	printf("touch_receive_handler has had: %s\n", addr);
+	int data = (int) * addr;
+	printf("touch_receive_handler has had: %d\n", data);
 	
 	if(addr != NULL){
 		/* Handle touch event */
 		char *command = (char*)malloc(sizeof(char) * block_size);
 		if(command == NULL) reset();
 		/* Get the command from memory address map */
-		from_memory_map(command, (int )addr);
+		from_memory_map(command, (int ) *addr);		
 		/* Send command over serial to MCU */
-//		objects[MPU].output(command);
+		objects[MPU].output(command);
 		/* Free allocated memory */
 		free(command);
 	}else{

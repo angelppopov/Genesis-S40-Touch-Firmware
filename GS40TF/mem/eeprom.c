@@ -15,7 +15,7 @@
 #define DATA 150
 #define block_size 100
 
-int target_temp;
+int target_temp = 90;
 
 void memory_init(){
 	/* Read the data from eeprom memory */
@@ -23,6 +23,8 @@ void memory_init(){
 }
 
 void from_memory_map(char *buffer, int addr){
+	printf("addr off set %d\n", addr);
+	printf("memory addr %d\n", DATA + (addr * block_size));
 	eeprom_read_block(( void *) buffer, ( const void *) DATA + (addr * block_size), block_size);
 }
 

@@ -55,7 +55,7 @@ static void touch_detected(char *pin, int size){
 		If is high enough read the event
 	*/
 	
-	if(current_temp  <= (target_temp - 20)){
+	if(current_temp  >= (target_temp - 20)){
         *pin = *(touch_events + current_event_read);
         current_event_read++;
         if (current_event_read == events) {
@@ -112,16 +112,23 @@ static void interruptPortB(void){
 
 /* Timer Counter */
 ISR(TCC0_OVF_vect){
-		if(sw){
-			led_toggle;
-			events++;
-			if(events > 1){
-				touch_events = (char *)realloc(touch_events, sizeof(char) * events);
-				}else{
-				touch_events = (char *)malloc(sizeof(char));
-			}
-			*(touch_events + events - 1) = '8';
-			
-			scheduler.add(TOUCH_RECEIVE, 1);
+	if (sw)
+	{
+		led_toggle;
+		events++;
+		if(events > 1){
+			touch_events = (char *)realloc(touch_events, sizeof(char) * events);
+		}else{
+			touch_events = (char *)malloc(sizeof(char));
 		}
+	/* 
+		0x1 = touch 1, 0x2 = touch 2, 0x3 = touch 3, 0x4 = touch 4, 0x5 = touch 5
+		0x6 = touch 6, 0x7 = touch 7, 0x8 = touch 8, 0x9 = touch 9, 0xA = touch 10
+		0xB = touch 11, 0xC = touch 12
+	 */
+		*(touch_events + events - 1) = 0xC;
+		printf("%d\n",*(touch_events + events - 1));
+		scheduler.add(TOUCH_RECEIVE, 1);
+	}
+
 }
