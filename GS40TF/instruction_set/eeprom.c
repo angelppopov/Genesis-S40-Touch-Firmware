@@ -7,6 +7,18 @@
 
 #include "eeprom.h"
 
+#define CONFIG 0
+#define COMMANDS 100
+#define DATA 150
+#define TOUCH 800
+#define ERROR 900
+
+static char ESPR[] = "E:10-20-30-5-5";
+static char MLK[] = "C1:1-70-5";
+static char CHOC[] = "C2:1-70-5";
+static char WAT[] = "W1:1-120";
+static char MIX[] = "M1:1-130";
+
 //static struct data_region memory_descriptor[6];
 static enum memory_types types;
 
@@ -18,6 +30,7 @@ static struct err			errs[6];
 
 
 void memory_init(){
+	/* Read the data from eeprom memory */
 	
 }
 

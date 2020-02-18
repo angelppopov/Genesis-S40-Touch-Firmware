@@ -45,7 +45,7 @@ struct event_linker{
 
 void event_register(struct event_linker *evt);
 volatile bool event_trigger(int id, int data_size);
-static void event_processing(int id, char *data, int size);
+static inline void event_processing(int id, char *data, int size);
 static void mcu_receive_handler(char *data, int size);
 static void ble_receive_handler(char *data, int size);
 static void touch_receive_handler(char *data);

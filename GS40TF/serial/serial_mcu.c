@@ -19,7 +19,7 @@
 #define USART_TX_BUFFER_MASK ( USART_TX_BUFFER_SIZE - 1 )
 
 typedef struct {
-	volatile char *buffer;
+	volatile char buffer[USART_RX_BUFFER_SIZE];
 	volatile int size;
 }event_data;
 
@@ -102,12 +102,6 @@ ISR(USARTE0_RXC_vect){
 	unsigned char tmpWPosition;
 	/* Read the received data */
 	data = USARTE0.DATA;
-	/* Determine the Write PositionOnTheBuffer */
-	tmpWPosition = (WritingPositionOnTheBuffer + 1) & USART_RX_BUFFER_MASK;
-	/* Store new index */
-	WritingPositionOnTheBuffer = tmpWPosition;
-	/* Store received data in buffer */
-	receive_buffer[tmpWPosition] = data;
 	/* Count the number of bytes received */
 	bytes_received++;
 	/* If data is terminated by a new line tell the scheduler that has new data to be read */
@@ -118,6 +112,13 @@ ISR(USARTE0_RXC_vect){
 		get_the_data_from_the_ring_buffer(get_event());
 		/* Add the event to the scheduler in order to be executed */
 		scheduler.add(this_event);
+	}else{
+		/* Determine the Write PositionOnTheBuffer */
+		tmpWPosition = (WritingPositionOnTheBuffer + 1) & USART_RX_BUFFER_MASK;
+		/* Store new index */
+		WritingPositionOnTheBuffer = tmpWPosition;
+		/* Store received data in buffer */
+		receive_buffer[tmpWPosition] = data;
 	}
 }
 

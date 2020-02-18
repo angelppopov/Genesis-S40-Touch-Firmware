@@ -37,7 +37,7 @@ volatile bool event_trigger(int id, int data_size){
 	return true;
 }
 
-static void event_processing(int id, char *data, int size){
+static inline void event_processing(int id, char *data, int size){
 
 	switch(id){
 		case MCU_RECEIVE:
@@ -53,16 +53,14 @@ static void event_processing(int id, char *data, int size){
 }
 
 static void mcu_receive_handler(char *data, int size){
-	printf("mcu receive handler with data size: %d bytes\n", size);
+	/* Echo to Serial BLE Module */
+	objects[BLE].output(data);
 	
-	
-	if(strcmp(data, "Installed") == 0) printf("Installed\n");
-	int s = 0;
-
+	int s = SUCCESS;
 	switch (s) {
 		case SUCCESS:
-		objects[MCU].output(data);
-		objects[TOUCH].output(data);
+//		objects[BLE].output(data);
+//		objects[TOUCH].output(data);
 		break;
 		case ERROR:
 		objects[BLE].output(data);
@@ -75,17 +73,15 @@ static void mcu_receive_handler(char *data, int size){
 }
 
 static void ble_receive_handler(char *data, int size){
-	printf("bluetooth receive handler with data size: %d bytes\n", size);
 	objects[MCU].output(data);
 }
 
 static void touch_receive_handler(char *data){
 	/* Handle touch event */
-	printf("touch receive handler: %c\n", *data);
 	/* Get the command from memory address map */
-	char *command = "from_memory_map[*data]";
+	char *command = "from_memory_map[*data]\n";
 	/* Send command over serial to MCU */
-	objects[BLE].output(command);
+	objects[MCU].output(command);
 	/* Send command over serial Bluetooth Module to connected devices */
 	//    events[BLE].output(command);
 }

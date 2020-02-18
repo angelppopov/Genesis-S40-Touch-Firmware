@@ -2,7 +2,7 @@
  * instruction_set.h
  *
  * Created: 2/10/2020 9:38:13 AM
- *  Author: angelpopov
+ *  Author: Angel Popov
  */ 
 
 

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#include "utils/utils.h"
 #include "serial/serial_ble.h"
 #include "serial/serial_mcu.h"
 #include "touch_panel/touch_panel.h"
@@ -19,6 +20,7 @@ extern FILE stdout_on_port_e;
 extern event_scheduler scheduler;
 
 void init_32_mhz_internal_osc(void);
+
 
 void init(void)
 {
@@ -39,8 +41,7 @@ int main(void)
 									*/
 	stdout = &stdout_on_port_e;		/*
 										Set default stdout to other MCU on PORTE0
-									*/
-	printf("Working\n");
+									*/	
     while (1)
 	{
 		scheduler.process();
@@ -54,3 +55,4 @@ void init_32_mhz_internal_osc(void){
 		CCP = CCP_IOREG_gc;								//Trigger protection mechanism
 		CLK_CTRL = CLK_SCLKSEL_RC32M_gc;				//Enable internal  32Mhz crystal
 }
+

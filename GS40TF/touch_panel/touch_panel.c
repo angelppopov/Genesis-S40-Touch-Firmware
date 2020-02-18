@@ -8,6 +8,7 @@
 #include "touch_panel.h"
 #include "../handler.h"
 #include "../scheduler.h"
+#include "../timer/timer.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
@@ -15,7 +16,7 @@
 #define led_toggle	PORTQ_OUTTGL |= (1<<PIN3_bp)
 
 
-static char *touch_events;
+static volatile char *touch_events;
 static uint8_t current_event_read;
 static uint8_t events;
 
@@ -35,6 +36,7 @@ void touch_panel_init(void){
 	this_event.id = TOUCH_RECEIVE;
 	/* Setup hardware */
 	interruptPortB();
+	init_hardware_interrupts();
 	led_output;
 	
 }
@@ -42,7 +44,7 @@ void touch_panel_init(void){
 static void touch_detected(char *pin, int size){
 	/* This function will be invoked from event system when an event is triggered from interrupt routine */
     *pin = *(touch_events + current_event_read);
-	printf("touch: %c\n", *pin);
+//	printf("touch: %c\n", *pin);
     current_event_read++;
     if (current_event_read == events) {
 	    current_event_read = events = 0;
@@ -73,14 +75,46 @@ static void interruptPortB(void){
 	// External interrupt 0 on PB3, enable pull up, sense falling edge
 	PORTB.PIN3CTRL = PORT_OPC_PULLUP_gc;	// pull up
 	PORTB_OUT |= (1<<PIN3_bp);				// set pin high
-	PORTB.PIN7CTRL = PORT_ISC_RISING_gc;	// configure interrupt
+	PORTB.PIN3CTRL = PORT_ISC_RISING_gc;	// configure interrupt
 	PORTB.INT0MASK = PIN3_bm;				// configure interrupt vector
 	PORTB.INTCTRL = PORT_INT0LVL_LO_gc;		// interrupt level pg.150
 	
 
 	// Input
-	PORTB.DIRSET &= ~(1<<PIN7_bp);
+	PORTB.DIRSET &= ~(1<<PIN3_bp);
 
 	// Enable low level interrupts
 	PMIC.CTRL = PMIC_LOLVLEN_bm;
+}
+
+/* Fast Counter */
+ISR(TCC0_OVF_vect){
+	if(sw){
+		led_toggle;
+		events++;
+		if(events > 1){
+			touch_events = (char *)realloc(touch_events, sizeof(char) * events);
+			}else{
+			touch_events = (char *)malloc(sizeof(char));
+		}
+		*(touch_events + events - 1) = '8';
+		this_event.data_size = 1;
+		
+		scheduler.add(&this_event);
+	}
+}
+
+
+void fake_event(void){
+	led_toggle;
+	events++;
+	if(events > 1){
+		touch_events = (char *)realloc(touch_events, sizeof(char) * events);
+		}else{
+		touch_events = (char *)malloc(sizeof(char));
+	}
+	*(touch_events + events - 1) = '8';
+	this_event.data_size = 1;
+	
+	scheduler.add(&this_event);
 }
