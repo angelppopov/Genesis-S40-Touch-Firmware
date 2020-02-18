@@ -16,12 +16,12 @@ void dma_init(void){
 	Set   the   Enable bit (ENABLE) in the DMA Control register (CTRL) 
 	to enable the DMAC with default settings for priority.
 	*/
-	DMA.CTRL |= DMA_CH_ENABLE_bm;
+	//DMA.CTRL |= DMA_CH_ENABLE_bm;
 	/*
 	Set   the   Transfer Mode bitfield (BURSTLEN) in Channel 0 Control Register (CTRL) 
 	equal to 0x03 to select eight-byte burst mode.
 	*/
-	DMA.CH0 |= DMA_CH_BURSTLEN_gm;
+	//DMA.CH0 |= DMA_CH_BURSTLEN_gm;
 	/*
 	ADDRCTRL – Address Control register pg.64 of XMEGA AU datasheet register description
 	
@@ -60,7 +60,7 @@ void dma_init(void){
 	/*
 	Set   the   Enable bit (ENABLE) in Channel 0 Control register (CTRL) to enable DMA channel 0.
     */
-	DMA.CH0 |= DMA_CH_ENABLE_bm;
+//	DMA.CH0 |= DMA_CH_ENABLE_bm;
     /*
     Set   the   Transfer Request bit (TRFREQ) in Channel 0 Control register (CTRL) to start the transaction.
     */

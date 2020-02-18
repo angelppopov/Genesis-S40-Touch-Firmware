@@ -12,9 +12,10 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#define USART_RX_BUFFER_SIZE 512     /* 2,4,8,16,32,64,128 or 256 bytes */
-#define USART_TX_BUFFER_SIZE 512     /* 2,4,8,16,32,64,128 or 256 bytes */
+#define USART_RX_BUFFER_SIZE 256     /* 2,4,8,16,32,64,128 or 256 bytes */
+#define USART_TX_BUFFER_SIZE 256     /* 2,4,8,16,32,64,128 or 256 bytes */
 #define USART_RX_BUFFER_MASK ( USART_RX_BUFFER_SIZE - 1 )
 #define USART_TX_BUFFER_MASK ( USART_TX_BUFFER_SIZE - 1 )
 
@@ -39,23 +40,21 @@ static volatile char instruction[USART_RX_BUFFER_SIZE];
 
 FILE stdout_on_port_c = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
 
-static struct event_linker ble = {
-	.id = BLE_RECEIVE,
+/* Define an object io */
+static struct object ble = {
+	.id = BLE,
 	.input = receive,
 	.output = send,
 };
 
-static q_event *this_event;
-extern event_scheduler scheduler;
-
 static volatile event_data *events_data;
 static int event_number;
 static uint8_t current_event_read;
+extern volatile event_scheduler scheduler;
 
 void serial_ble_init(void){
 	/* Register event */
 	event_register(&ble);
-	this_event->id = BLE_RECEIVE;
 	/* Serial on PORTE0 */
 	//For interrupt-driven USART operation, global interrupts should be disabled during the initialization
 	cli();
@@ -70,7 +69,7 @@ void serial_ble_init(void){
 	USARTC0.CTRLA = (USARTC0.CTRLA & (~(USART_RXCINTLVL_gm | USART_TXCINTLVL_gm | USART_DREINTLVL_gm))) |
 	USART_RXCINTLVL_LO_gc | USART_TXCINTLVL_OFF_gc | USART_DREINTLVL_OFF_gc;
 	USARTC0_BAUDCTRLB = 0;
-	USARTC0_BAUDCTRLA = 34;
+	USARTC0_BAUDCTRLA = 207; // 207 - 9600 baud
 	USARTC0.CTRLB=(USARTC0.CTRLB & (~(USART_RXEN_bm | USART_TXEN_bm | USART_CLK2X_bm | USART_MPCM_bm | USART_TXB8_bm))) |
 	USART_RXEN_bm | USART_TXEN_bm;/* | USART_CLK2X_bm;*/
 	//Enable All level Interrupts
@@ -82,7 +81,7 @@ void serial_ble_init(void){
 	The ISR reads the data from USART data register 0x08A0 and appends it to a ring buffer with size of 512 bytes.
 	An event gets issued from the ISR when the value of data register 0x0AA0 is 0x0A.
 	
-	TODO: Implement DMA driven data read;
+	TODO: Implement DMA driven data read.
 */
 
 ISR(USARTC0_RXC_vect){
@@ -99,7 +98,8 @@ ISR(USARTC0_RXC_vect){
 		/* Get the data from the ring buffer in order to be accessed when the scheduler executes this event */
 		get_the_data_from_the_ring_buffer(get_event());
 		/* Add the event to the scheduler in order to be executed */
-		scheduler.add(this_event);
+		scheduler.add(BLE_RECEIVE, bytes_received);
+		bytes_received = 0;
 	}else{
 		/* Determine the Write PositionOnTheBuffer */
 		tmpWPosition = (WritingPositionOnTheBuffer + 1) & USART_RX_BUFFER_MASK;
@@ -117,12 +117,17 @@ ISR(USARTC0_RXC_vect){
 */
 
 static void send(char* sp){
+	int breaking = 0;
+	printf("BLE output accessed! Data: ---- %s ---- is send to BLE module\n", sp);
 	while(*sp != 0x00)	//Here we check if there is still more chars to send, this is done checking the actual char and see if it is different from the null char
 	{
 		transmit(*sp);	//Using the simple send function we send one char at a time
 		sp++;			//We increment the pointer so we can read the next char
+		breaking++;
+		if(breaking == 193) break;
 	}
 }
+
 
 static void transmit(unsigned char data){
 	while ( !( USARTC0.STATUS & USART_DREIF_bm) ); // Wait until loop
@@ -177,9 +182,6 @@ static volatile void event_occurred(void){
 		event_data *last_data = (events_data + event_number - 1);
 		last_data->size = bytes_received;
 	}
-	
-	this_event->data_size = bytes_received;
-	bytes_received = 0;
 }
 
 static volatile event_data* get_event(){

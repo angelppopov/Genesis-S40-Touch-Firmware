@@ -11,6 +11,7 @@
 #include <avr/delay.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 
 /* Dynamically allocated buffer of events to be executed */
@@ -27,23 +28,27 @@ void scheduler_init(){
 	scheduler.process = execute;
 }
 
-volatile void append(q_event *ev){
+static volatile void append(int id, int data_size){
+	printf("Scheduler append %d\n",id);
     q_size++;
     if(q_size <= 1){
 	    /* Allocate memory if it has not been previously allocated */
 	    event_queue = (q_event *)malloc(sizeof(q_event));
 		if(event_queue == NULL) reset();
-	    *event_queue = *ev;
+	    event_queue->id = id;
+		event_queue->data_size = data_size;
 	}else{
 	    /* Resize the memory block if has been allocated */
 	    event_queue = (q_event *)realloc(event_queue, sizeof(q_event) * q_size);
 	    if(event_queue == NULL) reset();
 	    /* Assign to data to last memory address */
-	    *(event_queue + q_size - 1) = *ev;
+		q_event *next_in_queue = (q_event *) (event_queue + q_size - 1);
+	    next_in_queue->id = id;
+		next_in_queue->data_size = data_size;
     }
 }
 
-volatile void execute(){
+static volatile void execute(){
 	if(!queue_is_empty){
 		cpu_relax();
 		/* Process the first event in the event queue */
@@ -78,3 +83,4 @@ static q_event* remove_from_queue(){
 void cpu_relax(){
 	_delay_ms(50);
 }
+

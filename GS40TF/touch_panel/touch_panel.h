@@ -14,6 +14,5 @@ static void touch_detected(char *pin, int size);
 static void leds(char *data);
 /* Setup hardware */
 static void interruptPortB(void);
-void fake_event(void);
 
 #endif /* TOUCH_PANEL_H_ */

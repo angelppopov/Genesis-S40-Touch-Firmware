@@ -15,19 +15,20 @@
 #include "touch_panel/touch_panel.h"
 #include "handler.h"
 #include "scheduler.h"
+#include "mem/eeprom.h"
 
 extern FILE stdout_on_port_e;
-extern event_scheduler scheduler;
+extern volatile event_scheduler scheduler;
 
 void init_32_mhz_internal_osc(void);
 
-
 void init(void)
 {
+	scheduler_init();
 	serial_mcu_init();
 	serial_ble_init();
 	touch_panel_init();
-	scheduler_init();
+	memory_init();
 	wdt_enable(1000);
 }
 
@@ -35,17 +36,20 @@ int main(void)
 {
 	init_32_mhz_internal_osc();
 	init();
-	
 	sei();							/*
 										Enables interrupts by setting the global interrupt mask.
 									*/
 	stdout = &stdout_on_port_e;		/*
 										Set default stdout to other MCU on PORTE0
 									*/	
+
+	printf("Working...\n\n\n");
+	_delay_ms(1000);
+	
     while (1)
 	{
-		scheduler.process();
-		wdt_reset();
+		scheduler.process();        /* Execute events */
+		wdt_reset();                /* Reset Watchdog timer */ 
 	}
 }
 

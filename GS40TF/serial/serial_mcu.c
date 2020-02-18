@@ -12,9 +12,10 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#define USART_RX_BUFFER_SIZE 512     /* 2,4,8,16,32,64,128 or 256 bytes */
-#define USART_TX_BUFFER_SIZE 512     /* 2,4,8,16,32,64,128 or 256 bytes */
+#define USART_RX_BUFFER_SIZE 256     /* 2,4,8,16,32,64,128 or 256 bytes */
+#define USART_TX_BUFFER_SIZE 256     /* 2,4,8,16,32,64,128 or 256 bytes */
 #define USART_RX_BUFFER_MASK ( USART_RX_BUFFER_SIZE - 1 )
 #define USART_TX_BUFFER_MASK ( USART_TX_BUFFER_SIZE - 1 )
 
@@ -34,28 +35,24 @@ static volatile unsigned char WritingPositionOnTheBuffer;
 static volatile unsigned char ReadingPositionOnTheBuffer;
 static volatile int bytes_received;
 
-static volatile char receive_buffer[USART_RX_BUFFER_SIZE];
-static volatile char instruction[USART_RX_BUFFER_SIZE];
+static volatile char mpu_receive_buffer[USART_RX_BUFFER_SIZE];
 
 FILE stdout_on_port_e = FDEV_SETUP_STREAM(transmit, NULL, _FDEV_SETUP_WRITE);
 
-static struct event_linker mcu = {
-	.id = MCU_RECEIVE,
+static struct object mpu = {
+	.id = MPU,
 	.input = receive,
 	.output = send,
 };
 
-static q_event *this_event;
-extern event_scheduler scheduler;
 
 static volatile event_data *events_data;
 static int event_number;
 static uint8_t current_event_read;
 
-void serial_mcu_init(void){
-	/* Register event */
-	event_register(&mcu);
-	this_event->id = MCU_RECEIVE;
+extern volatile event_scheduler scheduler;
+
+void serial_mcu_init(void){	
 	/* Serial on PORTE0 */
 	//For interrupt-driven USART operation, global interrupts should be disabled during the initialization
 	cli();
@@ -66,27 +63,17 @@ void serial_mcu_init(void){
 	PORTE.OUTSET = PIN3_bm;
 	PORTE.DIR = PIN3_bm;
 	PORTE.DIRCLR = PIN2_bm;
-	// Communication mode: Asynchronous USART on PORTE
-	// Data bits: 8
-	// Stop bits: 1
-	// Parity: Disabled
 	USARTE0.CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
-	// Receive complete interrupt: Low Level
-	// Transmit complete interrupt: Disabled
-	// Data register empty interrupt: Disabled
 	USARTE0.CTRLA = (USARTE0.CTRLA & (~(USART_RXCINTLVL_gm | USART_TXCINTLVL_gm | USART_DREINTLVL_gm))) |
 	USART_RXCINTLVL_LO_gc | USART_TXCINTLVL_OFF_gc | USART_DREINTLVL_OFF_gc;
-	// Required Baud rate: 9600 at 2MHz system peripheral clock
 	USARTE0_BAUDCTRLB = 0;
-	USARTE0_BAUDCTRLA = 34; //207
-	// Receiver: On
-	// Transmitter: On
-	// Double transmission speed mode: On
-	// Multi-processor communication mode: Off
+	USARTE0_BAUDCTRLA = 34; // 34 - 57600
 	USARTE0.CTRLB=(USARTE0.CTRLB & (~(USART_RXEN_bm | USART_TXEN_bm | USART_CLK2X_bm | USART_MPCM_bm | USART_TXB8_bm))) |
 	USART_RXEN_bm | USART_TXEN_bm;/* | USART_CLK2X_bm;*/
 	//Enable All level Interrupts
 	PMIC.CTRL = PMIC_HILVLEN_bm |PMIC_MEDLVLEN_bm|PMIC_LOLVLEN_bm;	
+	/* Register event */
+	event_register(&mpu);
 }
 
 /*
@@ -111,14 +98,15 @@ ISR(USARTE0_RXC_vect){
 		/* Get the data from the ring buffer in order to be accessed when the scheduler executes this event */
 		get_the_data_from_the_ring_buffer(get_event());
 		/* Add the event to the scheduler in order to be executed */
-		scheduler.add(this_event);
+		scheduler.add(MPU_RECEIVE, bytes_received);
+		bytes_received = 0;
 	}else{
 		/* Determine the Write PositionOnTheBuffer */
 		tmpWPosition = (WritingPositionOnTheBuffer + 1) & USART_RX_BUFFER_MASK;
 		/* Store new index */
 		WritingPositionOnTheBuffer = tmpWPosition;
 		/* Store received data in buffer */
-		receive_buffer[tmpWPosition] = data;
+		mpu_receive_buffer[tmpWPosition] = data;
 	}
 }
 
@@ -129,10 +117,14 @@ ISR(USARTE0_RXC_vect){
 */
 
 static void send(char* sp){
+	int breaking = 0;
+	printf("MPU output accessed! Data: ---- %s ---- is send to MPU\n", sp);
 	while(*sp != 0x00)	//Here we check if there is still more chars to send, this is done checking the actual char and see if it is different from the null char
 	{
 		transmit(*sp);	//Using the simple send function we send one char at a time
 		sp++;			//We increment the pointer so we can read the next char
+		breaking++;
+		if(breaking == 193) break;
 	}
 }
 
@@ -168,7 +160,7 @@ static volatile void get_the_data_from_the_ring_buffer(event_data *data){
 	for(i = 0; i < data->size - 1; ++i ){
 		tmpWPosition = ( ReadingPositionOnTheBuffer + 1 ) & USART_RX_BUFFER_MASK;	// Calculate buffer index /
 		ReadingPositionOnTheBuffer = tmpWPosition;									// Store new index /
-		data->buffer[i] = receive_buffer[tmpWPosition];								// Return data /
+		data->buffer[i] = mpu_receive_buffer[tmpWPosition];								// Return data /
 		if( WritingPositionOnTheBuffer == ReadingPositionOnTheBuffer )
 		break;
 	}
@@ -189,9 +181,6 @@ static volatile void event_occurred(void){
 		event_data *last_data = (events_data + event_number - 1);
 		last_data->size = bytes_received;
 	}
-	
-	this_event->data_size = bytes_received;
-	bytes_received = 0;
 }
 
 static volatile event_data* get_event(){

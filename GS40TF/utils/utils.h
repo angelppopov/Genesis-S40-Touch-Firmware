@@ -2,7 +2,7 @@
  * utils.h
  *
  * Created: 2/12/2020 5:26:12 PM
- *  Author: angelpopov
+ *  Author: Angel Popov
  */ 
 
 
@@ -10,7 +10,5 @@
 #define UTILS_H_
 
 void reset(void);
-
-
 
 #endif /* UTILS_H_ */

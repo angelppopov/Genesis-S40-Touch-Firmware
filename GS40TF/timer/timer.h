@@ -2,7 +2,7 @@
  * timer.h
  *
  * Created: 2/12/2020 4:42:12 PM
- *  Author: angelpopov
+ *  Author: Angel Popov
  */ 
 
 
