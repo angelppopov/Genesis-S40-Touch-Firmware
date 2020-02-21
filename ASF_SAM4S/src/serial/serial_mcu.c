@@ -117,8 +117,6 @@ static void send(char* sp){
 		breaking++;											// Checking for chars send
 		if(breaking == 193) break;							// Break if 0x00 is not found
 	}
-	while (!(UART1->UART_SR & UART_SR_TXRDY));
-	uart_write(UART1, '\n');
 }
 
 /*
