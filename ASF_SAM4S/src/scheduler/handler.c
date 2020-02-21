@@ -29,6 +29,7 @@ void event_register(struct object *obj){
 	/* Assign an event output function */
 	objects[obj->id].output = obj->output;
 	cpu_relax();
+	std_write("Object registered\n");
 }
 
 volatile bool event_trigger(int id, int data_size){
@@ -53,7 +54,7 @@ volatile bool event_trigger(int id, int data_size){
 
 static inline void event_processing(int id, char *data, int size){
 	
-	printf("event processing.. %d\n", id);
+	//printf("event processing.. %d\n", id);
 	switch(id){
 		case MPU_RECEIVE:
 		mcu_receive_handler(data, size);
@@ -73,7 +74,8 @@ static void mcu_receive_handler(char *data, int size){
 	
 	if (strstr(data, "Error") != NULL) status = ERROR;
 	else status = SUCCESS;
-	printf("mcu_receive_handler has had: %s\n", data);
+	std_write("mcu_receive_handler\n");
+	//printf("mcu_receive_handler has had: %s\n", data);
 	switch (status) {
 		case SUCCESS:
 		objects[BLE].output(data);
@@ -90,14 +92,14 @@ static void mcu_receive_handler(char *data, int size){
 }
 
 static void ble_receive_handler(char *data, int size){
-	printf("ble_receive_handler has had: %s\n", data);
+	std_write("ble_receive_handler\n");
 	objects[MPU].output(data);
 }
 
 static void touch_receive_handler(char *addr){
 	/* Check if the object was able to give you the data */
 	int data = (int) * addr;
-	printf("touch_receive_handler has had: %d\n", data);
+	std_write("touch_receive_handler\n");
 	
 	if(addr != NULL){
 		/* Handle touch event */

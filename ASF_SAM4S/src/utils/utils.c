@@ -6,8 +6,14 @@
  */ 
 
 #include "utils.h"
+#include "serial/serial_mcu.h"
 
 
 void reset(void){
 	
+}
+
+
+void std_write(char *data){
+	mpu_write(data);
 }

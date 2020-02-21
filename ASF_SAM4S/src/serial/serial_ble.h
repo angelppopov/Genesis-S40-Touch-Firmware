@@ -12,6 +12,5 @@
 #include <asf.h>
 
 void serial_ble_init(void);
-static void send(Uart *port, char* sp);
 
 #endif /* SERIAL_BLE_H_ */

@@ -28,17 +28,17 @@ void scheduler_init(){
 }
 
 static volatile void append(int id, int data_size){
-	printf("Scheduler append %d\n",id);
+	std_write("Event add to scheduler\n");
 	q_size++;
 	if(q_size <= 1){
 		/* Allocate memory if it has not been previously allocated */
 		event_queue = (q_event *)malloc(sizeof(q_event));
 		if(event_queue == NULL) reset();
-		event_queue->id = id;
-		event_queue->data_size = data_size;
+			event_queue->id = id;
+			event_queue->data_size = data_size;
 		}else{
-		/* Resize the memory block if has been allocated */
-		event_queue = (q_event *)realloc(event_queue, sizeof(q_event) * q_size);
+			/* Resize the memory block if has been allocated */
+			event_queue = (q_event *)realloc(event_queue, sizeof(q_event) * q_size);
 		if(event_queue == NULL) reset();
 		/* Assign to data to last memory address */
 		q_event *next_in_queue = (q_event *) (event_queue + q_size - 1);

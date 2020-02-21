@@ -24,7 +24,6 @@ typedef struct {
 }event_data;
 
 static void send(char* sp);
-static void transmit(unsigned char data);
 static void receive(char* buffer, unsigned int buf_size);
 static volatile void get_the_data_from_the_ring_buffer(event_data *data);
 static volatile void event_occurred(void);
@@ -40,7 +39,6 @@ static struct object mpu = {
 	.input = receive,
 	.output = send,
 };
-
 
 static volatile event_data *events_data;
 static int event_number;
@@ -64,6 +62,7 @@ void serial_mcu_init(void){
 	uart_enable_interrupt(UART1, UART_IER_RXRDY);											// Enable Rx Ready Interrupt on UART1
 	irq_register_handler(UART1_IRQn, 0);													// Register Interrupt with Priority 0
 	
+	event_register(&mpu);
 }
 
 /*
@@ -83,6 +82,13 @@ ISR(UART1_Handler)
 		bytes_received++;
 		/* If data is terminated by a new line tell the scheduler that has new data to be read */
 		if(data == '\n'){
+			/* Register the event occurrence */
+			event_occurred();
+			/* Get the data from the ring buffer in order to be accessed when the scheduler executes this event */
+			get_the_data_from_the_ring_buffer(get_event());
+			/* Add the event to the scheduler in order to be executed */
+			scheduler.add(MPU_RECEIVE, bytes_received);
+			bytes_received = 0;
 		}else{
 			/* Determine the Write PositionOnTheBuffer */
 			tmpWPosition = (WritingPositionOnTheBuffer + 1) & USART_RX_BUFFER_MASK;
@@ -91,7 +97,6 @@ ISR(UART1_Handler)
 			/* Store received data in buffer */
 			receive_buffer[tmpWPosition] = data;
 		}
-		//uart_write(UART1, data);							// Echo the received byte
 	}
 }
 
@@ -112,6 +117,8 @@ static void send(char* sp){
 		breaking++;											// Checking for chars send
 		if(breaking == 193) break;							// Break if 0x00 is not found
 	}
+	while (!(UART1->UART_SR & UART_SR_TXRDY));
+	uart_write(UART1, '\n');
 }
 
 /*
@@ -166,4 +173,9 @@ static volatile void event_occurred(void){
 
 static volatile event_data* get_event(){
 	return (events_data + event_number - 1);
+}
+
+
+void mpu_write(char *data){
+	send(data);
 }

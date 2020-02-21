@@ -2,8 +2,12 @@
 #include <delay.h>
 #include "serial/serial_ble.h"
 #include "serial/serial_mcu.h"
+#include "scheduler/scheduler.h"
+#include "utils/utils.h"
 
 void wtd_enable(void);
+
+extern event_scheduler scheduler;
 
 int main (void)
 {
@@ -12,16 +16,21 @@ int main (void)
 	*/	
 	board_init();						// Used for dev board
 	sysclk_init();						// Initialize System Clock
-	wtd_enable();						// Enable Watchdog timer
 	
+	scheduler_init();
 	serial_mcu_init();
 	serial_ble_init();
-   
+	
 	ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
 	delay_ms(500);
 	ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
+	
+	wtd_enable();						// Enable Watchdog timer
+	
+	std_write("Working \n\n");
+	
 	while (1) {
-		delay_ms(10);
+		scheduler.process();
 		wdt_restart(WDT);
 	}
 }
