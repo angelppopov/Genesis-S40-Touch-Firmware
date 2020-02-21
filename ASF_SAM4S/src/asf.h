@@ -59,17 +59,32 @@
 // From module: Delay routines
 #include <delay.h>
 
+// From module: FatFS file system
+#include <diskio.h>
+#include <ff.h>
+#include <ffconf.h>
+#include <integer.h>
+
 // From module: GPIO - General purpose Input/Output
 #include <gpio.h>
 
 // From module: Generic board support
 #include <board.h>
 
+// From module: High Speed Multimedia Card Interface
+#include <hsmci.h>
+
 // From module: IOPORT - General purpose I/O service
 #include <ioport.h>
 
 // From module: Interrupt management - SAM implementation
 #include <interrupt.h>
+
+// From module: Memory Control Access Interface
+#include <ctrl_access.h>
+
+// From module: PDC - Peripheral DMA Controller Example
+#include <pdc.h>
 
 // From module: PIO - Parallel Input/Output Controller
 #include <pio.h>
@@ -81,8 +96,20 @@
 // From module: Part identification macros
 #include <parts.h>
 
+// From module: RTC - Real Time Clock
+#include <rtc.h>
+
 // From module: SAM4S Xplained Pro LED support enabled
 #include <led.h>
+
+// From module: SD/MMC Memory Control Access - Enable
+#include <sd_mmc_mem.h>
+
+// From module: SD/MMC stack on Multimedia Card interface
+#include <sd_mmc.h>
+
+// From module: Supported ports of FatFS
+#include <diskio.h>
 
 // From module: System Clock Control - SAM4S implementation
 #include <sysclk.h>
