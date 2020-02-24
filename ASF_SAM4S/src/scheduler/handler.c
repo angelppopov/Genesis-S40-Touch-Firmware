@@ -3,40 +3,44 @@
  *
  * Created: 2/20/2020 10:03:16 AM
  *  Author: Angel Popov
- */ 
+ */
 
+#include <asf.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "handler.h"
 #include "scheduler.h"
 #include "../utils/utils.h"
 #include "../memory/eeprom.h"
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 
 #define block_size 100
+#define locked	!ioport_get_pin_level(LED_0_PIN)
+#define unlock	ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE)
+#define lock	ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE)
 
 static struct object objects[6];
 static int status = SUCCESS;
-static bool locked = false;
 int current_temp = 90;
 
 /* 
 	This function appends to the event buffer
 */
+
 void event_register(struct object *obj){
 	/* Assign an event read function */
 	objects[obj->id].input = obj->input;
 	/* Assign an event output function */
 	objects[obj->id].output = obj->output;
 	cpu_relax();
-	std_write("Object registered\n");
+	printf("Object registered id: %d\n", obj->id);
 }
 
 volatile bool event_trigger(int id, int data_size){
 	if(locked)
 		return false;
 	/* Lock event trigger */
-	locked = true;
+	lock;
 	/* Request buffer for the data */
 	char *buffer = (char *)malloc(sizeof(char) * data_size);
 	if(buffer == NULL) reset();
@@ -47,14 +51,14 @@ volatile bool event_trigger(int id, int data_size){
 	/* Free up memory */
 	free(buffer);
 	/* Release the flag */
-	locked = false;
+	unlock;
 	/* Return true to other event triggers */
 	return true;
 }
 
 static inline void event_processing(int id, char *data, int size){
 	
-	//printf("event processing.. %d\n", id);
+	printf("event processing id %d\n", id);
 	switch(id){
 		case MPU_RECEIVE:
 		mcu_receive_handler(data, size);
@@ -74,8 +78,7 @@ static void mcu_receive_handler(char *data, int size){
 	
 	if (strstr(data, "Error") != NULL) status = ERROR;
 	else status = SUCCESS;
-	std_write("mcu_receive_handler\n");
-	//printf("mcu_receive_handler has had: %s\n", data);
+	printf("mcu_receive_handler has had: %s\n", data);
 	switch (status) {
 		case SUCCESS:
 		objects[BLE].output(data);
@@ -92,14 +95,14 @@ static void mcu_receive_handler(char *data, int size){
 }
 
 static void ble_receive_handler(char *data, int size){
-	std_write("ble_receive_handler\n");
+	printf("ble_receive_handler has had: %s\n", data);
 	objects[MPU].output(data);
 }
 
 static void touch_receive_handler(char *addr){
 	/* Check if the object was able to give you the data */
 	int data = (int) * addr;
-	std_write("touch_receive_handler\n");
+	printf("touch_receive_handler has had: %d\n", data);
 	
 	if(addr != NULL){
 		/* Handle touch event */

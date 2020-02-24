@@ -10,6 +10,5 @@
 #define UTILS_H_
 
 void reset(void);
-void std_write(char *data);
 
 #endif /* UTILS_H_ */

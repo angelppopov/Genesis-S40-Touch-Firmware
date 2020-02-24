@@ -23,46 +23,35 @@ int main (void)
 	serial_ble_init();
 	sd_card_init();
 	
-	ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
-	delay_ms(500);
-	ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
-	
 	wtd_enable();						// Enable Watchdog timer
 	
-	std_write("Working \n\n");
+	printf("Working \n\n");
 	
-
 	while (1) {
 		scheduler.process();
 		wdt_restart(WDT);
+		/* Is button pressed? Test SD Card Write */
+		if (ioport_get_pin_level(BUTTON_0_PIN) == BUTTON_0_ACTIVE) {
+			/* Write on SD Card */
+			scheduler.add(3, 1);
+			delay_ms(1000);
+		}
 	}
 }
 
 void wtd_enable(void){
-	//Calculate count value for 1s (1,000,000 us) Watchdog
-	uint32_t wdtCount = wdt_get_timeout_value(1000000UL, BOARD_FREQ_SLCK_XTAL);
+	//Calculate count value for 3s (3,000,000 us) Watchdog
+	uint32_t wdtCount = wdt_get_timeout_value(3000000UL, BOARD_FREQ_SLCK_XTAL);
 	
 	//Initialize Watchdog Timer
 	wdt_init(WDT, WDT_MR_WDRSTEN |      // Watchdog fault or underflow causes reset,
-	WDT_MR_WDDBGHLT,           // Debug pauses watchdog
-	wdtCount,                  // Restart value of Watchdog Counter
-	wdtCount);                 // Delta value, used to prevent reset loops, unused here
+	WDT_MR_WDDBGHLT,                    // Debug pauses watchdog
+	wdtCount,                           // Restart value of Watchdog Counter
+	wdtCount);                          // Delta value, used to prevent reset loops, unused here
 	
 }
 
 
-
-
-// 		/* Is button pressed? */
-// 		if (ioport_get_pin_level(BUTTON_0_PIN) == BUTTON_0_ACTIVE) {
-// 			/* Yes, so turn LED on. */
-// 			ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
-// 			send(UART1, data);
-// 			send(UART0, data);
-// 		} else {
-// 			/* No, so turn LED off. */
-// 			ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
-// 		}
-
-
-
+// 	ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
+// 	delay_ms(500);
+// 	ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);

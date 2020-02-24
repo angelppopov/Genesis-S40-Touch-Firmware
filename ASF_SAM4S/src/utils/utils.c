@@ -12,8 +12,3 @@
 void reset(void){
 	
 }
-
-
-void std_write(char *data){
-	mpu_write(data);
-}

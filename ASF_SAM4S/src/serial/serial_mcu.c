@@ -18,6 +18,18 @@
 #define USART_RX_BUFFER_MASK ( USART_RX_BUFFER_SIZE - 1 )
 #define USART_TX_BUFFER_MASK ( USART_TX_BUFFER_SIZE - 1 )
 
+/** USART Interface  : Console UART */
+#define CONF_TEST_USART      CONSOLE_UART
+/** Baudrate setting : 115200 */
+#define CONF_TEST_BAUDRATE   115200
+/** Char setting     : 8-bit character length (don't care for UART) */
+#define CONF_TEST_CHARLENGTH 0
+/** Parity setting   : No parity check */
+#define CONF_TEST_PARITY     UART_MR_PAR_NO
+/** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
+#define CONF_TEST_STOPBITS   false
+
+
 typedef struct {
 	volatile char buffer[USART_RX_BUFFER_SIZE];
 	volatile int size;
@@ -62,7 +74,20 @@ void serial_mcu_init(void){
 	uart_enable_interrupt(UART1, UART_IER_RXRDY);											// Enable Rx Ready Interrupt on UART1
 	irq_register_handler(UART1_IRQn, 0);													// Register Interrupt with Priority 0
 	
-	event_register(&mpu);
+	const usart_serial_options_t usart_serial_options = {
+		.baudrate   = CONF_TEST_BAUDRATE,
+		.charlength = CONF_TEST_CHARLENGTH,
+		.paritytype = CONF_TEST_PARITY,
+		.stopbits   = CONF_TEST_STOPBITS,
+	};
+	stdio_serial_init(CONF_TEST_USART, &usart_serial_options);
+	
+	event_register(&mpu);																	/*
+																								Register mpu structure to the handler.
+																								When an event is triggered, the scheduler
+																								will access io functions based on provided
+																								function pointers.
+																							*/
 }
 
 /*
@@ -80,7 +105,7 @@ ISR(UART1_Handler)
 		while (!(UART1->UART_SR & UART_SR_TXRDY));			// Wait for tx free
 		/* Count the number of bytes received */
 		bytes_received++;
-		/* If data is terminated by a new line tell the scheduler that has new data to be read */
+		/* If data is terminated by a new line tell the scheduler that there is new data */
 		if(data == '\n'){
 			/* Register the event occurrence */
 			event_occurred();
@@ -171,9 +196,4 @@ static volatile void event_occurred(void){
 
 static volatile event_data* get_event(){
 	return (events_data + event_number - 1);
-}
-
-
-void mpu_write(char *data){
-	send(data);
 }

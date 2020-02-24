@@ -11,5 +11,6 @@
 
 void sd_card_init(void);
 static void write(const char *file_name, const char *data);
+static void read(char *buff, int file);
 
 #endif /* SD_CARD_H_ */

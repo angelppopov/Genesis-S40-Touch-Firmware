@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <delay.h>
 
 /* Dynamically allocated buffer of events to be executed */
 static q_event *event_queue;
@@ -28,7 +29,7 @@ void scheduler_init(){
 }
 
 static volatile void append(int id, int data_size){
-	std_write("Event add to scheduler\n");
+	printf("Event is added to scheduler with id: %d\n", id);
 	q_size++;
 	if(q_size <= 1){
 		/* Allocate memory if it has not been previously allocated */
@@ -60,7 +61,7 @@ static volatile void execute(){
 				q_size = 0;
 			}
 		}
-		}else{
+	}else{
 		//PORTQ_OUTTGL |= (1<<PIN3_bp);
 		cpu_relax();
 	}
@@ -80,5 +81,5 @@ static q_event* remove_from_queue(){
 }
 
 void cpu_relax(){
-	
+	delay_ms(1);
 }

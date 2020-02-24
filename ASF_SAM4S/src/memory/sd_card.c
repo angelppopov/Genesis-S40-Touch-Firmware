@@ -4,18 +4,25 @@
  * Created: 2/20/2020 12:38:18 PM
  *  Author: Angel Popov
  */ 
-
-#include "sd_card.h"
-#include "../utils/utils.h"
 #include <asf.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "sd_card.h"
+#include "../utils/utils.h"
+#include "../scheduler/handler.h"
 
+
+
+static struct object sd_card = {
+	.id = SD,
+	.input = read,
+	.output = write
+};
 
 void sd_card_init(void){
 	
-	std_write("SD Card initializing\n");
+	printf("SD Card initializing\n");
 	//Enable PIOA clock to detect Card Detect (CD) change
 	sysclk_enable_peripheral_clock(ID_PIOA);
 
@@ -36,9 +43,9 @@ void sd_card_init(void){
 	//Initialize SD MMC stack
 	sd_mmc_init();
 	
-	write("0:test.txt", "test data\n");
-	write("0:test2.txt", "test2 data\n");
-
+	// Register SD Card object
+	event_register(&sd_card);
+	
 }
 
 static void write(const char *file_name, const char *data){
@@ -46,12 +53,12 @@ static void write(const char *file_name, const char *data){
 	FIL fhandle;    //File handle variable
 	char buf[25];
 		
-	std_write("Writing to sd card\n");
+	printf("Writing to sd card\n");
 	
 	// Mount the file system
 	memset(&fs, 0, sizeof(FATFS));					//initially clear it
 	if(f_mount(LUN_ID_SD_MMC_0_MEM, &fs) != FR_OK){
-		std_write("Fail to mount\n");
+		printf("Fail to mount\n");
 		return 0; //failed
 	}
 
@@ -72,12 +79,22 @@ static void write(const char *file_name, const char *data){
 		sprintf(buf,"Capacity: %lu\n",cap);
 		//Write capacity to file
 		if(f_puts(data, &fhandle) != 0){
-			std_write("Data is successfully written to the SD Card\n");
+			printf("Data is successfully written to the SD Card\n");
 		}else{
-			std_write("Data fail to be written to the SD Card\n");
+			printf("Data fail to be written to the SD Card\n");
 		}
 		f_close(&fhandle);													//Close the file (important!!)
 	}else{
-		std_write("Fail to open the file\n");
+		printf("Fail to open the file\n");
 	}
+}
+
+static void read(char *buff, int file){
+	// Test
+	//static int number = 0;
+	//number++;
+	//char data[] = {'T', 'E', 'S', 'T' , ' ' , (char) number, '\n'};
+	//write("0:test1.txt", data);
+	write("0:test1.json", "{DATA:{data\n}}");
+	*buff = NULL;
 }

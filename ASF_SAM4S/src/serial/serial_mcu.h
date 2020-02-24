@@ -12,6 +12,5 @@
 #include <asf.h>
 
 void serial_mcu_init(void);
-void mpu_write(char *data);
 
 #endif /* SERIAL_MCU_H_ */

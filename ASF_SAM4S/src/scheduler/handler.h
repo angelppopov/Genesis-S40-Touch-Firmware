@@ -20,6 +20,8 @@
 #define TOUCH_RECEIVE 2
 #define TOUCH 2
 
+#define SD 3
+
 #define SUCCESS 1
 #define ERROR -1
 
