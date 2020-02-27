@@ -96,6 +96,10 @@
 // From module: Part identification macros
 #include <parts.h>
 
+// From module: QTouch Sensor with I2C interface
+#include <QT2160.h>
+#include <qt_i2c.h>
+
 // From module: RTC - Real Time Clock
 #include <rtc.h>
 
@@ -116,6 +120,15 @@
 
 // From module: System Clock Control - SAM4S implementation
 #include <sysclk.h>
+
+// From module: TWI - Two-Wire Interface - SAM implementation
+#include <sam_twi/twi_master.h>
+#include <sam_twi/twi_slave.h>
+#include <twi_master.h>
+#include <twi_slave.h>
+
+// From module: TWI - Two-wire Interface
+#include <twi.h>
 
 // From module: UART - Univ. Async Rec/Trans
 #include <uart.h>
