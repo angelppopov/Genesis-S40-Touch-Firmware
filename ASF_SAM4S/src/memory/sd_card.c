@@ -12,7 +12,7 @@
 #include "../utils/utils.h"
 #include "../scheduler/handler.h"
 
-
+void test_read(const char *file_name, char *data);
 
 static struct object sd_card = {
 	.id = SD,
@@ -90,11 +90,57 @@ static void write(const char *file_name, const char *data){
 }
 
 static void read(char *buff, int file){
-	// Test
-	//static int number = 0;
-	//number++;
-	//char data[] = {'T', 'E', 'S', 'T' , ' ' , (char) number, '\n'};
-	//write("0:test1.txt", data);
-	write("0:test1.json", "{DATA:{data\n}}");
-	*buff = NULL;
+
+	write("0:test1.txt", "test data\n");
+	
+	char *data = (char *)malloc(sizeof(char) * 100);
+	
+	test_read("0:test1.txt",data);
+	
+	printf("Data: %s\n", data);
+	delay_ms(100);
+	free(data);
+}
+
+
+void test_read(const char *file_name, char *data){
+	FATFS fs;       //File system variable
+	FIL fhandle;    //File handle variable
+	char buf[25];
+	
+	printf("Reading data from SD Card\n");
+	
+	// Mount the file system
+	memset(&fs, 0, sizeof(FATFS));					//initially clear it
+	if(f_mount(LUN_ID_SD_MMC_0_MEM, &fs) != FR_OK){
+		printf("Fail to mount\n");
+		return 0; //failed
+	}
+
+	Ctrl_status status = sd_mmc_test_unit_ready(0);
+	while (status != CTRL_GOOD){
+		status = sd_mmc_test_unit_ready(0);
+		if(status == CTRL_FAIL){
+			//Wait for a card to be inserted
+			while (sd_mmc_check(0) != CTRL_NO_PRESENT)
+			wdt_restart(WDT);
+		}
+	}
+	
+	//Open a file
+	if(f_open(&fhandle, file_name, FA_CREATE_ALWAYS | FA_READ) == FR_OK)
+	{
+		
+		TCHAR result = f_gets(buf, sizeof(buf) ,&fhandle);
+		printf("result %d\n", result);
+		printf("buff %s \n", buf);
+		if(result != 0){
+			printf("Data is successfully read from SD Card\n");
+		}else{
+			printf("Failed to read data from SD Card\n");
+		}
+		f_close(&fhandle);													//Close the file (important!!)
+	}else{
+		printf("Fail to open the file\n");
+	}
 }

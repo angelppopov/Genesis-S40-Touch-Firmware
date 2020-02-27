@@ -21,7 +21,10 @@ void memory_init(){
 }
 
 void from_memory_map(char *buffer, int addr){
-	
+	*buffer = 'P';
+	buffer[1] = 'i';
+	buffer[2] = 'n';
+	buffer[3] = '\n';
 }
 
 void update_memory_block(char *data, int addr){

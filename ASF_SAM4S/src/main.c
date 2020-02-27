@@ -1,5 +1,6 @@
 #include <asf.h>
 #include <delay.h>
+#include "touch_panel/touch_panel.h"
 #include "serial/serial_ble.h"
 #include "serial/serial_mcu.h"
 #include "scheduler/scheduler.h"
@@ -21,6 +22,7 @@ int main (void)
 	scheduler_init();
 	serial_mcu_init();
 	serial_ble_init();
+	touch_panel_init();
 	sd_card_init();
 	
 	wtd_enable();						// Enable Watchdog timer

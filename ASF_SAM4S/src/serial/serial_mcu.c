@@ -101,8 +101,10 @@ ISR(UART1_Handler)
 	/* If data received */
 	if((uart_get_status(UART1) & UART_SR_RXRDY) == UART_SR_RXRDY)
 	{
-		uart_read(UART1, &data);							/* Read the received data */
-		while (!(UART1->UART_SR & UART_SR_TXRDY));			// Wait for tx free
+		/* Read the received data */
+		uart_read(UART1, &data);
+		/* Wait for TX free */
+		while (!(UART1->UART_SR & UART_SR_TXRDY));
 		/* Count the number of bytes received */
 		bytes_received++;
 		/* If data is terminated by a new line tell the scheduler that there is new data */
@@ -133,7 +135,7 @@ ISR(UART1_Handler)
 */
 
 static void send(char* sp){
-	int breaking = 0;										// Flag to prevent running in infinite loop
+	int breaking = 0;										// Flag to prevent running in an infinite loop
 	while(*sp != 0x00)										// Execute until 0x00 is found
 	{
 		while (!(UART1->UART_SR & UART_SR_TXRDY));

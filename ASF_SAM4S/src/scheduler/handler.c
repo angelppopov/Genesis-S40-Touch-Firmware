@@ -22,6 +22,7 @@
 static struct object objects[6];
 static int status = SUCCESS;
 int current_temp = 90;
+bool processing_mpu_request;
 
 /* 
 	This function appends to the event buffer
@@ -104,7 +105,7 @@ static void touch_receive_handler(char *addr){
 	int data = (int) * addr;
 	printf("touch_receive_handler has had: %d\n", data);
 	
-	if(addr != NULL){
+	if(*addr != NULL){
 		/* Handle touch event */
 		char *command = (char*)malloc(sizeof(char) * block_size);
 		if(command == NULL) reset();
