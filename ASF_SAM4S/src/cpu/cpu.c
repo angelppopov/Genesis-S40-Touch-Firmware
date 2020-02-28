@@ -8,5 +8,5 @@
 #include "cpu.h"
 
 int configMAX_SYSCALL_INTERRUPT_PRIORITY(void){
-	
+	return 0;
 }
