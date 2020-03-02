@@ -9,6 +9,27 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-void reset(void);
+#include <asf.h>
 
+#define C1 11
+#define C2 12
+#define W1 13
+#define W2 14
+#define M1 15
+#define M2 16
+#define E  17
+
+typedef struct {
+	uint8_t type;
+	char *data;
+	int size;
+}node;
+
+typedef struct {
+	node node;
+}nodes;
+
+void reset(void);
+nodes* get_command_notes(char *data);
+int get_temp(const char *data);
 #endif /* UTILS_H_ */

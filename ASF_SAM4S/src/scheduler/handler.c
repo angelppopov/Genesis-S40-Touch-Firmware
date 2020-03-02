@@ -21,6 +21,7 @@
 
 static struct object objects[6];
 static int status = SUCCESS;
+static char* request;
 int current_temp = 90;
 bool processing_mpu_request;
 
@@ -74,12 +75,29 @@ static inline void event_processing(int id, char *data, int size){
 }
 
 static void mcu_receive_handler(char *data, int size){
-	/* Echo to Serial BLE Module */
-	//objects[BLE].output(data);
 	
+	printf("mcu_receive_handler has had: %s\n", data);
+	
+	/* Handle errors */
 	if (strstr(data, "Error") != NULL) status = ERROR;
 	else status = SUCCESS;
-	printf("mcu_receive_handler has had: %s\n", data);
+	/* Read the current temperature */
+	if (strstr(data, "Boiler") != NULL) current_temp = get_temp(data);
+	/* Confirm request */
+	if((sizeof(request) > 1) & strstr(data, request) != NULL) {
+		/* Free up allocated memory */
+		free(request);
+		/* Send conformation */
+		objects[MPU].output("Confirmed");
+	}else{
+		/* Resend the command over serial to MCU */
+		objects[MPU].output(request);
+	}
+	/* Increment the counter on success */
+	if(strstr(data, "Ready") != NULL){
+		
+	}
+	
 	switch (status) {
 		case SUCCESS:
 		objects[BLE].output(data);
@@ -113,6 +131,8 @@ static void touch_receive_handler(char *addr){
 		from_memory_map(command, (int ) *addr);		
 		/* Send command over serial to MCU */
 		objects[MPU].output(command);
+		/* Save instruction in new buffer */
+		memcpy(request, command, sizeof(char) * block_size);
 		/* Free allocated memory */
 		free(command);
 	}else{

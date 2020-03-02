@@ -29,6 +29,11 @@ int main (void)
 	
 	printf("Working \n\n");
 	
+	char data[] = "strtok needs to be called several times to split a string strtok needs to be called several times to split a string strtok needs to be called several times to split a stringstrtok needs to be called several times to split a string strtok needs to be called several times to split a string strtok needs to be called several times to split a stringstrtok needs to be called several times to split a string strtok needs to be called several times to split a string strtok needs to be called several times to split a stringstrtok needs to be called several times to split a string strtok needs to be called several times to split a string strtok needs to be called several times to split a stringstrtok needs to be called several times to split a string strtok needs to be called several times to split a string strtok needs to be called several times to split a string";
+	nodes *nodes_data = get_command_notes(data);
+	free(nodes_data);
+	
+	
 	while (1) {
 		scheduler.process();
 		wdt_restart(WDT);
