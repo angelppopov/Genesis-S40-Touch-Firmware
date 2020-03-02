@@ -20,13 +20,10 @@
 
 //#define portENABLE_INTERRUPTS() 	__asm volatile ( "MVTIPL #0" )
 //#define portDISABLE_INTERRUPTS() 	__asm volatile ( "MVTIPL #0" )
-
+static void prvRestoreContextOfFirstTask( void );
 
 __INLINE void xPortPendSVHandler(void);
 void xPortSysTickHandler(void);
 int configMAX_SYSCALL_INTERRUPT_PRIORITY(void);
 
-/* Current Task Control Block */
-int pxCurrentTCBConst(void);
-int pxCurrentTCB(void);
 #endif /* CPU_H_ */

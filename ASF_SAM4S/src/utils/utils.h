@@ -27,6 +27,7 @@ typedef struct {
 
 typedef struct {
 	node node;
+	uint8_t size;
 }nodes;
 
 void reset(void);

@@ -17,6 +17,7 @@
 #include "scheduler.h"
 #include "mem/eeprom.h"
 #include "mem/sd_card.h"
+#include "i2c/i2c.h"
 
 extern FILE stdout_on_port_e;
 extern volatile event_scheduler scheduler;
@@ -46,6 +47,8 @@ int main(void)
 
 	printf("Working...\n\n\n");
 	_delay_ms(2000);
+	
+	i2c_init();
 	
     while (1)
 	{
