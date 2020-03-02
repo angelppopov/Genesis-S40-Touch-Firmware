@@ -82,7 +82,7 @@ static void mcu_receive_handler(char *data, int size){
 	if (strstr(data, "Error") != NULL) status = ERROR;
 	else status = SUCCESS;
 	/* Read the current temperature */
-	if (strstr(data, "Boiler") != NULL) current_temp = get_temp(data);
+	if (strstr(data, "Boiler") != NULL) current_temp = get_current_temp(data);
 	/* Confirm request */
 	if((sizeof(request) > 1) & strstr(data, request) != NULL) {
 		/* Free up allocated memory */

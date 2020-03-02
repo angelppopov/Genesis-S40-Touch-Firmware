@@ -28,7 +28,6 @@ nodes* get_command_notes(char *data){
     int i_node = 0;
     while (ptr != NULL){
         /* Increment node size */
-        printf("token: %s\n", ptr);
         i_node++;
         if(i_node > 1){
             /* Reallocate command nodes */
@@ -66,7 +65,12 @@ static uint8_t get_node_type(const char *data){
 	 else return 0;
 }
 
-int get_temp(const char *data){
-	
-	return 96;
+int get_current_temp(const char* data){
+	if(strstr(data, "Boiler") != NULL){
+		char delim[] = "-";
+		char *ptr = strtok(data, delim);
+		ptr = strtok(NULL, delim);
+		return atoi(ptr);
+	}
+	return 0;
 }
