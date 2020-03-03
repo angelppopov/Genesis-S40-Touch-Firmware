@@ -59,11 +59,17 @@
 // From module: Delay routines
 #include <delay.h>
 
+// From module: EEFC - Enhanced Embedded Flash Controller
+#include <efc.h>
+
 // From module: FatFS file system
 #include <diskio.h>
 #include <ff.h>
 #include <ffconf.h>
 #include <integer.h>
+
+// From module: Flash - SAM Flash Service API
+#include <flash_efc.h>
 
 // From module: GPIO - General purpose Input/Output
 #include <gpio.h>
@@ -82,6 +88,9 @@
 
 // From module: Memory Control Access Interface
 #include <ctrl_access.h>
+
+// From module: NVM - Non volatile memory access
+#include <common_nvm.h>
 
 // From module: PDC - Peripheral DMA Controller Example
 #include <pdc.h>

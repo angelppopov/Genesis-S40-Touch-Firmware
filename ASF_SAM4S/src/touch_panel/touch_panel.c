@@ -9,7 +9,7 @@
 #include "touch_panel.h"
 #include "../scheduler/handler.h"
 #include "../scheduler/scheduler.h"
-#include "../memory/eeprom.h"
+#include "../memory/nvm.h"
 
 static volatile char *touch_events;
 static uint8_t current_event_read;

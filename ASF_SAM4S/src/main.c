@@ -5,6 +5,7 @@
 #include "serial/serial_mcu.h"
 #include "scheduler/scheduler.h"
 #include "memory/sd_card.h"
+#include "memory/nvm.h"
 #include "utils/utils.h"
 
 void wtd_enable(void);
@@ -24,6 +25,7 @@ int main (void)
 	serial_ble_init();
 	touch_panel_init();
 	sd_card_init();
+	nvmem_init();
 	
 	wtd_enable();						// Enable Watchdog timer
 	

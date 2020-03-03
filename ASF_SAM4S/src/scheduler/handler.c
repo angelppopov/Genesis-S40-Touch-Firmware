@@ -12,7 +12,7 @@
 #include "handler.h"
 #include "scheduler.h"
 #include "../utils/utils.h"
-#include "../memory/eeprom.h"
+#include "../memory/nvm.h"
 
 #define block_size 100
 #define locked	!ioport_get_pin_level(LED_0_PIN)

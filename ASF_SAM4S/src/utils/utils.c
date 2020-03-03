@@ -53,7 +53,6 @@ nodes* get_command_notes(char *data){
     */
 }
 
-
 static uint8_t get_node_type(const char *data){
 	 if(strstr(data, "C1")) return C1;
 	 else if(strstr(data, "C2")) return C2;
