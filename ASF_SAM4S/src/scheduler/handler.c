@@ -115,7 +115,42 @@ static void mcu_receive_handler(char *data, int size){
 
 static void ble_receive_handler(char *data, int size){
 	printf("ble_receive_handler has had: %s\n", data);
-	objects[MPU].output(data);
+	
+	/* 
+       Test Drink command executes a specific component of an instruction from
+	   memory map specified by drink number.
+	   
+       As an example TD-1-C1 means: Test Canister 1 of drink number 1
+       As an example TD-1-E means: Test Espresso 1 of drink number 1
+       As an example TD-1-W means: Test Water 1 of drink number 1
+	*/
+	if(strstr(data, "TP-1-C") != NULL){
+		/* Get a drink number */
+		char addr = get_tp_number(data);
+        /* Get the command from memory address map */
+		char *command = (char*)malloc(sizeof(char) * block_size);
+        from_memory_map(command,  (int )(addr - '0'));
+		/* Get command nodes */
+		nodes *nodes_data = get_command_notes(command);
+		/* Get the corresponding command node */
+		char *test_node = get_tp_node(nodes_data, data);
+		/* Send the command node over serial to MCU */
+		objects[MPU].output(test_node);
+		/* Save instruction in new buffer */
+		memcpy(request, command, sizeof(char) * block_size);
+		/* Free allocated memory */
+		free(command);
+		free(nodes_data);
+		free(test_node);
+	}else if (strstr(data, "GC") != NULL){
+		/* Get drink counters from memory and send it over bluetooth */
+		printf("Get Counters\n");
+		objects[BLE].output(data);
+		
+	}else{
+		/* Echo command */
+		objects[MPU].output(data);
+	}
 }
 
 static void touch_receive_handler(char *addr){

@@ -85,14 +85,6 @@ static void enable_interrupt(void){
 static void pin_edge_handler(const uint32_t id, const uint32_t index)
 {
 	
-// 	if ((id == ID_PIOC) && (index == PIO_PC24)){
-// 		if (pio_get(PIOA, PIO_TYPE_PIO_INPUT, PIO_PC24)){
-// 			pio_clear(PIOA, PIO_PA3);
-// 		}else{
-// 			pio_set(PIOA, PIO_PA3);
-// 		}
-// 	}
-	
 	events++;
 	if(events > 1){
 		touch_events = (char *)realloc(touch_events, sizeof(char) * events);

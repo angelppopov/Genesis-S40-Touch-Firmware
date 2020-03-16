@@ -11,6 +11,9 @@
 #include <string.h>
 
 static uint8_t get_node_type(const char *data);
+static uint8_t get_node_by_type(nodes *data,  int type_to_search_for);
+static uint8_t get_node_to_search_for(const char *data);
+
 
 void reset(void){
 	
@@ -38,7 +41,7 @@ nodes* get_command_notes(char *data){
 	    }
         /* Assign the data to last memory address */
         nodes *next = (nodes *) (m_nodes + i_node - 1);
-        /* Write the command to the next address in memory*/
+        /* Write the command to the next address in memory */
 		next->node.data = ptr;
 		next->node.size = strlen(ptr);
 		next->node.type = get_node_type(ptr);
@@ -72,4 +75,41 @@ int get_current_temp(const char* data){
 		return atoi(ptr);
 	}
 	return 0;
+}
+
+static uint8_t get_node_by_type(nodes *data,  uint8_t type_to_search_for){
+	int ret = 0;
+	nodes *cNode;
+	for(int i = 0; i < data->size; i++){
+		cNode = (nodes *)(data + i);
+		if(cNode->node.type == type_to_search_for) ret++;
+	}
+	return ret;
+}
+
+static uint8_t get_node_to_search_for( char *data){
+	char delim[] = "-";
+	char *ptr = strtok(data, delim);
+	ptr = strtok(NULL, delim);
+	ptr = strtok(NULL, delim);
+	
+	return get_node_type(ptr);
+}
+
+char *get_tp_node(const nodes *nodes_data, const char* cmd){
+	/**/
+	char *res = (char *)malloc(sizeof(char) * get_node_by_type(nodes_data, get_node_to_search_for(cmd)));
+	
+	
+	
+	return res;
+}
+
+
+char get_tp_number(const char *data){
+	char delim[] = "-";
+	char *ptr = strtok(data, delim);
+	ptr = strtok(NULL, delim);
+	
+	return atof(ptr);
 }
